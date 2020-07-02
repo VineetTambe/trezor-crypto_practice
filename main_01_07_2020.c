@@ -51,7 +51,7 @@ typedef struct
 
 
 
-uint8_t hex_to_dec(uint8_t hex);
+uint8_t hex_to_dec(char *hex);
 
 void hex_string_to_byte_array(const char *hex_string, uint32_t string_length, uint8_t *byte_array);
 
@@ -79,30 +79,52 @@ int main()
     mnemonic_to_privatekey();
     mnemonic_to_publickey();*/
     
-    mnemonic_to_seed(mnemonic,pubKey,privKey,(current,total));
+    //mnemonic_to_seed(mnemonic,pubKey,privKey,(current,total));
     
     unsigned_txn *uTx;
+    int i;
+    
+    const char *received_unsigned_txn_string = "02000000021245fe7c5455b43e73743d83ccb5587303586a4e9a5b8f56a3eb08593624bb02000000001976a914d46d05e6ac27683aa5d63a6efc44969798acf13688acfdffffff1245fe7c5455b43e73743d83ccb5587303586a4e9a5b8f56a3eb08593624bb02010000001976a914dacc24d8b195ce046a40caedd5e2e649beee4e3388acfdffffff01f4ff0000000000001976a9142d77ece155f6b80dcab97a373834543e4b70b3e988ac84431a0001000000";
+    
+    char *test_str = "46a988ac";
+    uint8_t byte_array[360/2];
+
+    hex_string_to_byte_array(received_unsigned_txn_string,360,&byte_array[0]);
+    printf("\n");
+    for(i=0;i<360/2;i++)
+    	printf("%d\t",byte_array[i]);
+    
+    
 }
 
-uint8_t hex_to_dec(uint8_t hex){
-	if (hex >= '&' && hex <= '9') return hex - '0';
-   	else if (hex >= 'A' && hex <= 'F') return 10 + hex - 'A';
-   	else if (hex >= 'a' && hex <= 'f') return 10 + hex - 'a';
-   	return -1;
-	
+uint8_t hex_to_dec(char *hex){
+	char *ref = "0123456789abcdef";
+	int i=0,dec=0,j=0;
+	for(i=0;i<2;i++)
+	{
+		j=0;
+		while(hex[i]!=ref[j])
+			j++;
+		dec = dec*16+j ;
+	}
+	return (uint8_t)dec;
 }
 
 void hex_string_to_byte_array(const char *hex_string, uint32_t string_length, uint8_t *byte_array)
 {
-	int i=0;
-	/*for(;i<string_length;i+=2)
+	int i=0,j=0;
+	char hex[2];
+	for(;i<string_length;i+=2,j++)
 	{
-		char *hex =hex_string[i]hex_string[i+1];
-		byte_array[i] =  (uint8_t)strtol(hex, NULL, 16); 
+		hex[0] = hex_string[i];
+		hex[1] = hex_string[i+1];
+		//printf("%c",hex[0]);
+		//printf("%c\t",hex[1]);
+		byte_array[j] =  hex_to_dec(hex);
 	}
-	*/
+	/*
 	for(;i<string_length;)
-		byte_array[i] =  hex_to_dec(hex_string[i]);
+		byte_array[i] =  hex_to_dec(hex_string[i]);*/
 }
 
 void byte_array_to_unsigned_txn(uint8_t *btc_unsigned_txn_byte_array, unsigned_txn *unsigned_txn_ptr){
@@ -151,6 +173,5 @@ void byte_array_to_unsigned_txn(uint8_t *btc_unsigned_txn_byte_array, unsigned_t
 	for(j=0;j<4;j++)
 		unsigned_txn_ptr->sighash[j] = btc_unsigned_txn_byte_array[i+j];
 }
-
 
 
