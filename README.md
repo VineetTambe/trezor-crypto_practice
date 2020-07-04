@@ -1,13 +1,13 @@
 # trezor-crypto_practice
  
-1 .run commands are:
+run commands are:
 
-```make -f Makefile.mk
+```
+make -f Makefile.mk
 
-./m2e```
+./m2e
 
-2 .run commands are:
+make -f Makefile.sir
 
-```make -f Makefile.sir
-
-./main```
+./main
+```
