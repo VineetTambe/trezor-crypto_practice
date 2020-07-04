@@ -308,9 +308,6 @@ void serialize_unsigned_txn_to_sign(unsigned_txn *unsigned_txn_ptr, uint8_t inpu
 	  uint8_t i;
       unsigned_txn_input temp;
       
-	  temp.script_length[0]=0;
-      temp.script_public_key;
-      
 	  len = sizeof(temp.script_public_key);
       memcpy(temp.script_public_key,0,len);
       
@@ -361,13 +358,9 @@ void serialize_unsigned_txn_to_sign(unsigned_txn *unsigned_txn_ptr, uint8_t inpu
         offset += len;
 
         len = sizeof(unsigned_txn_ptr->input[i].script_length);
-        memcpy( (btc_serialized_unsigned_txn+offset),temp.script_length,len);
+        memcpy( (btc_serialized_unsigned_txn+offset),0,len);
         offset += len;
 
-        len = sizeof(unsigned_txn_ptr->input[i].script_public_key);
-        memcpy( (btc_serialized_unsigned_txn+offset),temp.script_public_key, len);
-        offset += len;
-		
         len = sizeof(unsigned_txn_ptr->input[i].sequence);
         memcpy( (btc_serialized_unsigned_txn+offset),unsigned_txn_ptr->input[i].sequence, len);
         offset += len;
