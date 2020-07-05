@@ -111,14 +111,14 @@ int main()
     const char *received_unsigned_txn_string = "02000000021245fe7c5455b43e73743d83ccb5587303586a4e9a5b8f56a3eb08593624bb02000000001976a914d46d05e6ac27683aa5d63a6efc44969798acf13688acfdffffff1245fe7c5455b43e73743d83ccb5587303586a4e9a5b8f56a3eb08593624bb02010000001976a914dacc24d8b195ce046a40caedd5e2e649beee4e3388acfdffffff01f4ff0000000000001976a9142d77ece155f6b80dcab97a373834543e4b70b3e988ac84431a0001000000";    
 	const char *received_txn_metadata_string = "018000002c8000000180000000020000000000000001000000010000000001000000000000000200";
 	
-	len = sizeof(received_unsigned_txn_string/2);
+	len = sizeof(received_unsigned_txn_string)/2;
 	uint8_t unsigned_txn_byte_array[len];
 	hex_string_to_byte_array(received_unsigned_txn_string,len,&unsigned_txn_byte_array[0]);// converting string to byte array
 	
 	unsigned_txn *unsigned_txn_ptr;
 	byte_array_to_unsigned_txn(unsigned_txn_byte_array, &unsigned_txn_ptr);// cast into the unsigned_txn structure
 	
-	len = sizeof(received_txn_metadata_string/2);
+	len = sizeof(received_txn_metadata_string)/2;
 	uint8_t txn_metadata_byte_array[len];
 	hex_string_to_byte_array(received_txn_metadata_string,len,&txn_metadata_byte_array[0]);// converting string to byte array
 	
@@ -458,13 +458,13 @@ void byte_array_to_txn_metadata(uint8_t *btc_txn_metadata_byte_array, txn_metada
 	
 	len=4;
 	memcpy(txn_metadata_ptr->purpose_index, (btc_txn_metadata_byte_array+offset), len);
-	offest+=len;
+	offset+=len;
 	
 	memcpy(txn_metadata_ptr->purpose_index, (btc_txn_metadata_byte_array+offset), len);
-	offest+=len;
+	offset+=len;
 	
 	memcpy(txn_metadata_ptr->purpose_index, (btc_txn_metadata_byte_array+offset), len);
-	offest+=len;
+	offset+=len;
 	
 	txn_metadata_ptr->input_count[0] = btc_txn_metadata_byte_array[offset++];
 
@@ -474,9 +474,9 @@ void byte_array_to_txn_metadata(uint8_t *btc_txn_metadata_byte_array, txn_metada
     for (uint8_t i = 0; i < *txn_metadata_ptr->input_count; i++)
     {
     	memcpy(txn_metadata_ptr->input[i].chain_index, (btc_txn_metadata_byte_array+offset), len);
-		offest+=len;
+		offset+=len;
 		memcpy(txn_metadata_ptr->input[i].address_index, (btc_txn_metadata_byte_array+offset), len);
-		offest+=len;
+		offset+=len;
 	}
 	
 	txn_metadata_ptr->output_count[0] = btc_txn_metadata_byte_array[offset++];
@@ -487,9 +487,9 @@ void byte_array_to_txn_metadata(uint8_t *btc_txn_metadata_byte_array, txn_metada
     for (uint8_t i = 0; i < *txn_metadata_ptr->output_count; i++)
     {
     	memcpy(txn_metadata_ptr->output[i].chain_index, (btc_txn_metadata_byte_array+offset), len);
-		offest+=len;
+		offset+=len;
 		memcpy(txn_metadata_ptr->output[i].address_index, (btc_txn_metadata_byte_array+offset), len);
-		offest+=len;
+		offset+=len;
 	}
 	
 	txn_metadata_ptr->change_count[0] = btc_txn_metadata_byte_array[offset++];
@@ -500,9 +500,9 @@ void byte_array_to_txn_metadata(uint8_t *btc_txn_metadata_byte_array, txn_metada
     for (uint8_t i = 0; i < *txn_metadata_ptr->change_count; i++)
     {
     	memcpy(txn_metadata_ptr->change[i].chain_index, (btc_txn_metadata_byte_array+offset), len);
-		offest+=len;
+		offset+=len;
 		memcpy(txn_metadata_ptr->change[i].address_index, (btc_txn_metadata_byte_array+offset), len);
-		offest+=len;
+		offset+=len;
 	}
 	
 	
@@ -514,10 +514,9 @@ uint32_t unsigned_txn_to_signed_txn(unsigned_txn *unsigned_txn_ptr, txn_metadata
     signed_txn_ptr->output = (txn_output*)malloc(len);
     
     len = (*unsigned_txn_ptr->input_count)*sizeof(signed_txn_input); 
-    signed_txn_input->input = (signed_txn_input*)malloc(len);
+    signed_txn_ptr->input = (signed_txn_input*)malloc(len);
     
-    
-	}
+}
 
 
 
