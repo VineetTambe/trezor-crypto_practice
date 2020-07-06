@@ -144,12 +144,9 @@ int main()
     //Masternode_to_addressNode_m_44_1_0_0(node);
     
     unsigned_txn_to_signed_txn(unsigned_txn_ptr,txn_metadata_ptr,mnemonic,"",signed_txn_byte_array);
-    printf("\n\n%d",signed_txn_byte_array->input[0].script_length[0]);
-    for(i=0;i<signed_txn_byte_array->input[0].script_length;i++)
+    for(i=0;i<(uint8_t)signed_txn_byte_array->input[0].script_length;i++)
     {
         printf("%02x ",signed_txn_byte_array->input[0].script_sig[i]);
-        if(i==106)
-        break;
     }
 
     return 0;
