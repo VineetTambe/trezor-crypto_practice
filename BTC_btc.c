@@ -1,4 +1,6 @@
 #include "BTC_btc.h"
+#include "crypto/base58.h"
+#include "crypto/ripemd160.h"
 
     uint8_t hex_to_dec(uint8_t hex)
     {
@@ -309,24 +311,118 @@
         
         HDNode hdnode;
         hdnode_from_seed(bip39seed, 512/8, SECP256K1_NAME, &hdnode);
-        hdnode_private_ckd(&hdnode, BYTE_ARRAY_TO_UINT32(txn_metadata_ptr->purpose_index));
-        hdnode_private_ckd(&hdnode, BYTE_ARRAY_TO_UINT32(txn_metadata_ptr->coin_index));
-        hdnode_private_ckd(&hdnode, BYTE_ARRAY_TO_UINT32(txn_metadata_ptr->account_index));   
-        hdnode_private_ckd(&hdnode, BYTE_ARRAY_TO_UINT32(txn_metadata_ptr->input[i].chain_index));
-        hdnode_private_ckd(&hdnode, BYTE_ARRAY_TO_UINT32(txn_metadata_ptr->input[i].address_index));
+        hdnode_private_ckd(&hdnode, BYTE_ARRAY_TO_UINT32(txn_metadata_ptr->purpose_index));//44'
+        hdnode_private_ckd(&hdnode, BYTE_ARRAY_TO_UINT32(txn_metadata_ptr->coin_index));// 0 , 0
+        hdnode_private_ckd(&hdnode, BYTE_ARRAY_TO_UINT32(txn_metadata_ptr->account_index));// 0   
+        hdnode_private_ckd(&hdnode, BYTE_ARRAY_TO_UINT32(txn_metadata_ptr->input[i].chain_index));//0
+        hdnode_private_ckd(&hdnode, BYTE_ARRAY_TO_UINT32(txn_metadata_ptr->input[i].address_index));//0 
         hdnode_fill_public_key(&hdnode);
 
+        printf("\nChain code : ");    
         for(int j=0;j<32;j++)
             printf("%02x",hdnode.chain_code[j]);
 
-        printf("\n");    
+        printf("\nPrivate Key: ");    
         for(int j=0;j<32;j++)
             printf("%02x",hdnode.private_key[j]);
 
-        printf("\n");
+        printf("\nPublic key: ");
         for(int j=0;j<32;j++)
             printf("%02x",hdnode.public_key[j]);
         printf("\n");
+
+        uint8_t HashD1[32];
+        uint8_t HashD2[20];
+        uint8_t publicKeyVersionHashD[21];
+        uint8_t HashD3[32];
+        uint8_t HashD4[32];
+        uint8_t addr[25];
+        char strn[53];
+        /*
+        char * hexstring = "02d1f969fe9d9f50d8102e690fde57969b77ed2595618fbd673db4ccbeacc9d0da";
+        uint8_t pubKey[33];
+        hex_string_to_byte_array(hexstring,66, &pubKey[0]);
+        */
+        printf("\nPublic key = ");
+        for(int j=0;j<33;j++)
+            printf("%02x",hdnode.public_key[j]);
+        printf("\n");
+        
+        sha256_Raw(hdnode.public_key, 33, HashD1);
+        //sha256_Raw(pubKey, 33, HashD1);
+        printf("\nHashD1 = ");
+        for(int j=0;j<32;j++)
+            printf("%02x",HashD1[j]);
+        printf("\n");
+        
+        ripemd160(HashD1, 32, HashD2);
+
+        printf("\nHashD2 = ");
+        for(int j=0;j<32;j++)
+            printf("%02x",HashD2[j]);
+        printf("\n");
+        switch(txn_metadata_ptr->coin_index[3])
+        {
+            case 0x00:
+                // for bitcoin -
+                publicKeyVersionHashD[0] = 0x00;
+            break;
+            case 0x02:
+                //for LITECOIN  
+                publicKeyVersionHashD[0] = 0x30;
+            break;
+            case 0x03:
+                // for dogecoin -
+                publicKeyVersionHashD[0] = 0x1E;
+            break;
+            case 0x05:
+                // for DASH -
+                publicKeyVersionHashD[0] = 0x4C;
+            break;
+        }
+        
+        
+        
+        
+        for(int j=1;j<21;j++)
+            publicKeyVersionHashD[j] = HashD2[j-1];
+
+        printf("\npublicKeyVersionHashD = ");
+        for(int j=0;j<21;j++)
+            printf("%02x",publicKeyVersionHashD[j]);
+        printf("\n");
+        
+        sha256_Raw(publicKeyVersionHashD,21, HashD3);
+
+        printf("\nHashD3 = ");
+        for(int j=0;j<32;j++)
+            printf("%02x",HashD3[j]);
+        printf("\n");
+        
+        
+        sha256_Raw(HashD3,32,HashD4);
+
+        printf("\nHashD4 = ");
+        for(int j=0;j<32;j++)
+            printf("%02x",HashD4[j]);
+        printf("\n");
+
+        //memcpy(&addr,&publicKeyVersionHashD,21);
+        for(int j=0;j<21;j++)
+            addr[j]=publicKeyVersionHashD[j];
+        for(int j=21;j<25;j++)
+            addr[j] = HashD4[j-21];
+        printf("\nhex Address: ");
+        for(int j=0;j<25;j++)
+            printf("%02x",addr[j]);
+        printf("\n");
+        int temp = base58_encode_check(addr,21,HASHER_SHA2D,strn,53);
+        printf("\nbase58 Address: ");
+        for(int j=0;j<temp;j++)
+            printf("%c",strn[j]);
+        printf("\n");
+
+
 
         ecdsa_sign_digest(&secp256k1, hdnode.private_key, digest, sig, NULL, NULL);//sig not being matched with the one calculated online, digest and private_key is correct though
         //int verify = ecdsa_verify_digest(&secp256k1,hdnode.public_key, sig, digest);
