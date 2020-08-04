@@ -1,7 +1,7 @@
 m2e: main.o bip39.o memzero.o sha2.o hmac.o pbkdf2.o rand.o
 	gcc main.o bip39.o memzero.o sha2.o hmac.o pbkdf2.o rand.o -o m2e -lm
 
-main.o: main.o bip39.h
+main.o: main.c bip39.h
 	gcc -c main.c
 
 bip39.o: bip39.c bip39_english.h options.h
